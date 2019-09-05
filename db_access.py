@@ -479,7 +479,7 @@ def create_report(**kwargs):
     try:
         res = {"success": False, "msg": ""}
         session.add(Report(title=kwargs["title"], author=kwargs["author"], editor=kwargs["editor"],
-                           lead=kwargs["lead"], tags=kwargs["tags"], content=kwargs["content"]))
+                           lead_word=kwargs["lead_word"], tags=kwargs["tags"], content=kwargs["content"]))
         # session.commit()
         session.flush()
         res["success"] = True

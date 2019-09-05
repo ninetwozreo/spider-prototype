@@ -11,7 +11,7 @@
         <span style="margin-left: 20px;">作者：{{ report.author }}</span>
         <span style="margin-left: 20px;">责任编辑：{{ report.editor }}</span>
         <p>[标签] {{ report.tags }}</p>
-        <p>[导语]<br><br>{{ report.lead }}</p>
+        <p>[导语]<br><br>{{ report.lead_word }}</p>
         <p>[正文]<br><br>{% module HTML_PARSE(report.content) %}</p>
     </div>
 </div>

@@ -140,7 +140,7 @@ class Report(Base):
     __tablename__ = 'report'
     id = Column(Integer, Sequence('report_id_seq'), primary_key=True)
     title = Column(String(1024))
-    lead = Column(Text)
+    lead_word = Column(Text)
     author = Column(String(256))
     editor = Column(String(256))
     tags = Column(String(1024))

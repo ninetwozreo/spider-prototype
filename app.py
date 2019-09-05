@@ -329,7 +329,7 @@ class ReportAddHandler(BaseHandler):
         title = self.get_argument("title")
         author = self.get_argument("author")
         editor = self.get_argument("editor")
-        lead = self.get_argument("lead")
+        lead_word = self.get_argument("lead_word")
         tags = self.get_argument("tags")
         content = self.get_argument("content")
 
@@ -349,7 +349,7 @@ class ReportAddHandler(BaseHandler):
             "title": title,
             "author": author,
             "editor": editor,
-            "lead": lead,
+            "lead_word": lead_word,
             "tags": tags,
             "content": content
         }

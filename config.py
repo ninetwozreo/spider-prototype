@@ -5,7 +5,7 @@
 DB = {
     'HOST': '127.0.0.1',
     'PORT': 3306,
-    'DB_NAME': 'jarvers',
+    'DB_NAME': 'news_feed',
     'USER': 'root',
     'PASSWORD' : '000000'
 }
