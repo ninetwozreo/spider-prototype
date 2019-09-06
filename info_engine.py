@@ -1,11 +1,12 @@
 # --*-- coding: utf-8 --*--
 
 import os
+import json
 import sys
 
 from utils.log import NOTICE, log, ERROR, RECORD
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 
 import time
@@ -19,11 +20,12 @@ from utils.html_downloader import crawl
 from bs4 import BeautifulSoup
 from celery import Celery
 
-
 celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites()
+
+
 # websites = get_websites_desc()
 
 @celery_app.task
@@ -67,9 +69,11 @@ def extract(w_id):
                                 COUNT += 1
                             # log(RECORD, "[name] [+] [{url}  {text}]".format(name=w.company.name_cn, url=url, text=text.strip()))
         if COUNT == 0:
-            log(NOTICE, "#{id} {name} {site} 抓到更新 {count} 条".format(id=w.company.id, name=w.company.name_cn, site=w.url, count=COUNT))
+            log(NOTICE, "#{id} {name} {site} 抓到更新 {count} 条".format(id=w.company.id, name=w.company.name_cn, site=w.url,
+                                                                    count=COUNT))
         else:
-            log(RECORD, "#{id} {name} {site} 抓到更新 {count} 条".format(id=w.company.id, name=w.company.name_cn, site=w.url, count=COUNT))
+            log(RECORD, "#{id} {name} {site} 抓到更新 {count} 条".format(id=w.company.id, name=w.company.name_cn, site=w.url,
+                                                                    count=COUNT))
 
     except Exception as e:
         try:
@@ -86,12 +90,84 @@ def gen_info():
             extract.delay(w.id)
 
 
+# 刷新车站信息
+def gen_station():
+    text = crawl("https://www.12306.cn/index/script/core/common/station_name_v10037.js")
+    count = 0
+    while len(text) > 7:
+        # if count==0:
+        text = text[text.find("|") + 1:len(text)]
+
+        name = text[0:text.find("|")]
+        text = text[text.find("|") + 1:len(text)]
+
+        big_abbr = text[0:text.find("|")]
+        text = text[text.find("|") + 1:len(text)]
+
+        full_pinyin = text[0:text.find("|")]
+        text = text[text.find("|") + 1:len(text)]
+
+        small_abbr = text[0:text.find("|")]
+        text = text[text.find("|") + 1:len(text)]
+        # if(count>2868):
+        #     print("""""")
+        # id = int(text[0:text.find("@")])
+        station_info = {
+            'id': count,
+            'big_abbr': big_abbr,
+            'full_pinyin': full_pinyin,
+            'small_abbr': small_abbr,
+            'name': name
+        }
+        count += 1
+        res = create_station(**station_info)
+        if (not res["success"]):
+            print(res["msg"])
 
 
+# 刷新车次信息
+def gen_train_num():
+    url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
+    tran_num = "K"
+    num = 50
+    count_num = 0
+    while num < 9900:
+        try:
+            tran_num_u = tran_num + str(num)
+
+            text = crawl(url + tran_num_u)
+            if not text:
+                continue
+            # text = crawl("https://search.12306.cn/search/v1/h5/search?callback=jQuery110201481886827579022_1567752183819&keyword=" + tran_num_u + "&suorce=&action=&_=1567752183845")
+            json_train = json.loads(text[text.find("(") + 1:text.find(")")])
+            # print(json_train)
+
+            i = 0
+            while i < len(json_train['data']):
+                if json_train['data'][i]['params']['station_train_code'] == tran_num_u:
+                    info = json_train['data'][i]['params']
+                    tran_num_info = {
+                        'id': count_num,
+                        'total_station_num': info['total_num'],
+                        'useful': 'T',
+                        'train_no': info['train_no'],
+                        'train_code': info['station_train_code'],
+                        'from_station': info['from_station'],
+                        'to_station': info['to_station']
+                    }
+                    res = create_train_num(**tran_num_info)
+                    print(count_num)
+                    print(res['msg'])
+                    count_num += 1
+            i += 1
+            num += 1
+        except Exception as e:
+            print(num)
 
 
 if __name__ == '__main__':
     while True:
-        gen_info()
-        time.sleep(60 * CRAWL_INTERVAL)
-
+        gen_train_num()
+        # gen_station()
+        # gen_info()
+        # time.sleep(60 * CRAWL_INTERVAL)

@@ -28,7 +28,7 @@ def crawl(url):
         if encoding not in ['utf-8', 'UTF-8']:
             try:
                 if apparent_encoding in ['utf-8', 'UTF-8', 'UTF-8-SIG']:
-                    text = response.text.encode(encoding).decode('utf8')
+                    text = response.text.encode(apparent_encoding).decode('utf8')
                 else:
                     if encoding == 'gb2312' and apparent_encoding == 'GB2312':
                         text = response.text.encode('utf8').decode('utf8')

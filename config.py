@@ -5,11 +5,11 @@
 DB = {
     'HOST': '127.0.0.1',
     'PORT': 3306,
-    'DB_NAME': 'news_feed',
+    'DB_NAME': 'jarvers',
     'USER': 'root',
     'PASSWORD' : '000000'
 }
-
+#admin 000000
 
 # 发送邮件的邮箱设置
 

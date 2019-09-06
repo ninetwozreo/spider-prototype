@@ -322,7 +322,51 @@ def delete_feeds():
         # session.rollback()
         return False
 
+#创建车次'id': count_num,
 
+def create_train_num(**kwargs):
+    try:
+        res = {"success": False, "msg": "", 'station': None}
+        trainNum = session.query(TrainNum).filter_by(train_code=kwargs["train_code"]).first()
+        if trainNum:
+            res["msg"] = "车次已存在"
+            return res
+        session.add(
+            TrainNum(id=kwargs["id"], total_station_num=kwargs["total_station_num"],
+                     train_code=kwargs["train_code"], train_no=kwargs["train_no"],
+                     from_station=kwargs["from_station"], to_station=kwargs["to_station"],
+                     useful=kwargs["useful"]))
+        # session.commit()
+        session.flush()
+        trainNum = session.query(TrainNum).filter_by(train_code=kwargs["train_code"]).first()
+        res["success"] = True
+        res["trainNum"] = trainNum
+        return res
+    except Exception as e:
+        # print(str(e))
+        # session.rollback()
+        res["msg"] = "创建出错"
+        return res
+#创建车站
+def create_station(**kwargs):
+    try:
+        res = {"success": False, "msg": "", 'station': None}
+        station = session.query(Station).filter_by(big_abbr=kwargs["big_abbr"]).first()
+        if station:
+            res["msg"] = "车站已存在"
+            return res
+        session.add(Station(id=kwargs["id"], small_abbr=kwargs["small_abbr"], big_abbr=kwargs["big_abbr"], name=kwargs["name"], full_pinyin=kwargs["full_pinyin"]))
+        # session.commit()
+        session.flush()
+        station = session.query(Station).filter_by(big_abbr=kwargs["big_abbr"]).first()
+        res["success"] = True
+        res["station"] = station
+        return res
+    except Exception as e:
+        # print(str(e))
+        # session.rollback()
+        res["msg"] = "创建出错"
+        return res
 
 def create_company(**kwargs):
     try:

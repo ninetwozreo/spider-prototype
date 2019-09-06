@@ -1,6 +1,7 @@
 import os
 import sys
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 
 from config import DB
@@ -19,16 +20,16 @@ engine = create_engine('mysql+mysqldb://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB_
     DB_NAME=DB['DB_NAME'],
 ), convert_unicode=True, echo=False)
 
-
 DBSession = scoped_session(sessionmaker(autocommit=True, autoflush=False, bind=engine))
 Base = declarative_base()
 Base.query = DBSession.query_property()
 
 Base = declarative_base()
 
+
 def init_db(db_engine):
-  Base.metadata.create_all(bind=db_engine)
-  # Base.metadata.tables["log"].create(bind=db_engine)
+    Base.metadata.create_all(bind=db_engine)
+    # Base.metadata.tables["log"].create(bind=db_engine)
 
 
 class User(Base):
@@ -71,12 +72,11 @@ class CompanyProfle(Base):
     stock_code = Column(String(128))
 
 
-
 class Website(Base):
     __tablename__ = 'website'
     id = Column(Integer, Sequence('website_id_seq'), primary_key=True)
     url = Column(String(1024))
-    company_id  = Column(Integer, ForeignKey('company.id'))
+    company_id = Column(Integer, ForeignKey('company.id'))
     company = relationship("Company", back_populates="website")
     info_feed = relationship("InfoFeed", back_populates="website")
     html_content = relationship("HtmlContent", uselist=False, back_populates="website")
@@ -122,14 +122,14 @@ class ContactPerson(Base):
     __tablename__ = 'contact_person'
     id = Column(Integer, Sequence('contact_id_seq'), primary_key=True)
     company_id = Column(Integer, ForeignKey('company.id'))
-    name = Column(String(1024)) #姓名
+    name = Column(String(1024))  # 姓名
     gender = Column(String(1024))  # 性别
     age = Column(Integer)
-    position = Column(String(1024)) #职位
-    phone_number = Column(String(1024)) #电话
-    wechat = Column(String(1024)) #微信
-    email = Column(String(1024)) #邮箱
-    comment = Column(String(1024)) #备注
+    position = Column(String(1024))  # 职位
+    phone_number = Column(String(1024))  # 电话
+    wechat = Column(String(1024))  # 微信
+    email = Column(String(1024))  # 邮箱
+    comment = Column(String(1024))  # 备注
     create_at = Column(DateTime(timezone=True), default=func.now())
 
 
@@ -148,6 +148,39 @@ class Report(Base):
     update_at = Column(DateTime(timezone=True), default=func.now())
     create_at = Column(DateTime(timezone=True), default=func.now())
 
+# 火车车次
+
+
+class TrainNum(Base):
+    """
+    id 车次名 是否在用 站数  保留字段 起始站 终点站
+    """
+
+    __tablename__ = 'train_num'
+    id = Column(Integer, primary_key=True)
+    train_code = Column(String(256))
+    total_station_num = Column(Integer)
+    useful = Column(String(5))
+    train_no=Column(String(64))
+    from_station=Column(String(64))
+    to_station=Column(String(64))
+
+    # full_pinyin = Column(String(256))
+
+
+# 火车站
+class Station(Base):
+    """
+    id 小写缩写 大写缩写 中文名 全拼
+    """
+
+    __tablename__ = 'train_station'
+    id = Column(Integer, primary_key=True)
+    small_abbr = Column(String(1024))
+    big_abbr = Column(Text)
+    name = Column(String(256))
+    full_pinyin = Column(String(256))
+
 
 class CrawlerLOG(Base):
     __tablename__ = 'log'
@@ -155,14 +188,6 @@ class CrawlerLOG(Base):
     level = Column(Integer)
     text = Column(Text)
     create_at = Column(DateTime(timezone=True), default=func.now())
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
