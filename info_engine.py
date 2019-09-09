@@ -25,10 +25,10 @@ celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites();
-num_static1 = 233;
-count_num_static1 = 106;
+num_static1 = 699;
+count_num_static1 = 320;
 
-
+#262 567
 # websites = get_websites_desc()
 
 @celery_app.task
@@ -177,7 +177,7 @@ def gen_train_num(num_static, count_num_static):
             num_static1 = num
             print("异常 已爬取到车次：" + str(tran_num_u))
             print("数据主键已经到" + str(count_num))
-
+            time.sleep(60 * CRAWL_INTERVAL)
 
 if __name__ == '__main__':
 
