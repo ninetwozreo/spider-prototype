@@ -19,13 +19,16 @@ from utils.diff import diff_file
 from utils.html_downloader import crawl
 from bs4 import BeautifulSoup
 from celery import Celery
+# from multiprocessing import Pool, cpu_count
 
 celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
-websites = get_websites()
+websites = get_websites();
+num_static1 = 699;
+count_num_static1 = 320;
 
-
+#262 567
 # websites = get_websites_desc()
 
 @celery_app.task
@@ -126,31 +129,35 @@ def gen_station():
 
 
 # 刷新车次信息
-def gen_train_num(count_num_static,num_static):
+def gen_train_num(num_static, count_num_static):
     url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
     tran_num = "K"
+    global count_num_static1
+    global num_static1
     num = num_static
     count_num = count_num_static
+
     while num < 9900:
         try:
             tran_num_u = tran_num + str(num)
 
             text = crawl(url + tran_num_u)
             if not text:
-                count_num_static=count_num+1
-                num_static=num
-                print(tran_num_u)
-                print(count_num)
+                count_num_static1 = count_num
+                num_static1 = num
+                print("中断 已爬取到车次：" + str(tran_num_u))
+                print("数据主键已经到" + str(count_num))
                 break
             # text = crawl("https://search.12306.cn/search/v1/h5/search?callback=jQuery110201481886827579022_1567752183819&keyword=" + tran_num_u + "&suorce=&action=&_=1567752183845")
             json_train = json.loads(text[text.find("(") + 1:text.find(")")])
             # print(json_train)
 
             i = 0
-            while i < len(json_train['data']):
-                if json_train['data'][i]['params']['station_train_code'] == tran_num_u:
-                    info = json_train['data'][i]['params']
-                    tran_num_info = {
+            if ((json_train['data'] is not None)):
+                while (json_train['data'] is not None) & (i < len(json_train['data'])):
+                    if json_train['data'][i]['params']['station_train_code'] == tran_num_u:
+                        info = json_train['data'][i]['params']
+                        tran_num_info = {
                         'id': count_num,
                         'total_station_num': info['total_num'],
                         'useful': 'T',
@@ -158,25 +165,26 @@ def gen_train_num(count_num_static,num_static):
                         'train_code': info['station_train_code'],
                         'from_station': info['from_station'],
                         'to_station': info['to_station']
-                    }
-                    res = create_train_num(**tran_num_info)
-                    print(count_num)
-                    print(res['msg'])
-                    count_num += 1
-                i += 1
+                        }
+                        res = create_train_num(**tran_num_info)
+                        print("已保存成功:" + str(count_num) + "条")
+                        print(res['msg'])
+                        count_num += 1
+                    i += 1
             num += 1
         except Exception as e:
-            print(tran_num_u)
-            print(count_num)
-            print(num)
-
+            count_num_static1 = count_num
+            num_static1 = num
+            print("异常 已爬取到车次：" + str(tran_num_u))
+            print("数据主键已经到" + str(count_num))
+            time.sleep(60 * CRAWL_INTERVAL)
 
 if __name__ == '__main__':
-    count_num_static = 106
-    num_static = 235
-    while True:
 
-        gen_train_num(count_num_static,num_static)
+    while True:
+        # pool = Pool(processes=cpu_count())
+        # pool.map(gen_train_num, num_static1)
+        gen_train_num(num_static1, count_num_static1)
         # gen_station()
         # gen_info()
         # time.sleep(60 * CRAWL_INTERVAL)
