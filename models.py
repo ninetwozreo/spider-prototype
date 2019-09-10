@@ -1,3 +1,4 @@
+# --*-- coding: utf-8 --*--
 import os
 import sys
 
@@ -148,9 +149,28 @@ class Report(Base):
     update_at = Column(DateTime(timezone=True), default=func.now())
     create_at = Column(DateTime(timezone=True), default=func.now())
 
+
+
+# 火车车次车站关联关系
+
+class TrainNumStationRelation(Base):
+    """
+    id 到达时间 车次名 运行时间  开车时间 站中文名 是否是第二天（0，1） 该车次的第几站 车次主键 车站主键
+    """
+
+    __tablename__ = 'train_num_station_relation'
+    id = Column(Integer, primary_key=True)
+    arrive_time = Column(String(32))
+    train_code = Column(String(64))
+    running_time = Column(String(5))
+    start_time = Column(String(5))
+    station_name=Column(String(64))
+    arrive_day_diff=Column(String(64))
+    station_no=Column(Integer)
+    train_id=Column(Integer)
+    station_id=Column(Integer)
+
 # 火车车次
-
-
 class TrainNum(Base):
     """
     id 车次名 是否在用 站数  保留字段 起始站 终点站

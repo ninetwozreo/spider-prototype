@@ -322,6 +322,36 @@ def delete_feeds():
         # session.rollback()
         return False
 
+def get_train_nums():
+    train_nums = session.query(TrainNum).all()
+    return train_nums
+
+#创建车次与车站的关联关系'id': count_num,
+
+def create_train_relation_info(**kwargs):
+
+    try:
+        res = {"success": False, "msg": "", 'station': None}
+        trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_code=kwargs["train_code"],station_name=kwargs["station_name"]).first()
+        if trainNumStationRelation:
+            res["msg"] = "关系已存在"
+            return res
+        session.add(
+            TrainNumStationRelation( arrive_time=kwargs["arrive_time"],
+                     train_code=kwargs["train_code"], running_time=kwargs["running_time"],
+                      start_time=kwargs["start_time"], station_name=kwargs["station_name"],
+                      arrive_day_diff=kwargs["arrive_day_diff"],station_no=kwargs["station_no"]))
+        # session.commit()
+        session.flush()
+        # trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_code=kwargs["train_code"]).first()
+        res["success"] = True
+        # res["trainNumStationRelation"] = trainNumStationRelation
+        return res
+    except Exception as e:
+        # print(str(e))
+        # session.rollback()
+        res["msg"] = "创建出错"
+        return res
 #创建车次'id': count_num,
 
 def create_train_num(**kwargs):

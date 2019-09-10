@@ -25,8 +25,9 @@ celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
 celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites();
-num_static1 = 699;
-count_num_static1 = 320;
+train_nums = get_train_nums();
+num_static1 = 3257;
+count_num_static1 = 715;
 
 #262 567
 # websites = get_websites_desc()
@@ -128,6 +129,29 @@ def gen_station():
             print(res["msg"])
 
 
+# 刷新车次关系信息
+def gen_station_num_relation(num_static, count_num_static):
+    for train_num in train_nums[:]:
+        url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
+        url_parm_date="&leftTicketDTO.train_date="
+        url_suffix="&rand_code="
+        param_date=time.strftime('%Y-%m-%d',time.localtime(time.time()))+1
+        text = crawl(url + train_num.train_no+url_parm_date+param_date+url_suffix)
+        json_train_msg = json.loads(text)
+        if ((json_train_msg['data']['data'] is not None)):
+            for relation in json_train_msg['data']['data']:
+                relation_info = {
+                    'arrive_time': relation['arrive_time'],
+                    'train_code': relation['station_train_code'],
+                    'running_time': relation['running_time'],
+                    'start_time': relation['start_time'],
+                    'station_name': relation['station_name'],
+                    'arrive_day_diff': relation['arrive_day_diff'],
+                    'station_no': relation['station_no']
+                }
+                res = create_train_relation_info(**relation_info)
+
+
 # 刷新车次信息
 def gen_train_num(num_static, count_num_static):
     url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
@@ -142,6 +166,7 @@ def gen_train_num(num_static, count_num_static):
             tran_num_u = tran_num + str(num)
 
             text = crawl(url + tran_num_u)
+
             if not text:
                 count_num_static1 = count_num
                 num_static1 = num
@@ -173,8 +198,9 @@ def gen_train_num(num_static, count_num_static):
                     i += 1
             num += 1
         except Exception as e:
-            count_num_static1 = count_num
+            count_num_static1 = count_num-1
             num_static1 = num
+            print(e)
             print("异常 已爬取到车次：" + str(tran_num_u))
             print("数据主键已经到" + str(count_num))
             time.sleep(60 * CRAWL_INTERVAL)
@@ -186,5 +212,6 @@ if __name__ == '__main__':
         # pool.map(gen_train_num, num_static1)
         gen_train_num(num_static1, count_num_static1)
         # gen_station()
+        # gen_station_num_relation()
         # gen_info()
         # time.sleep(60 * CRAWL_INTERVAL)
