@@ -126,18 +126,22 @@ def gen_station():
 
 
 # 刷新车次信息
-def gen_train_num():
+def gen_train_num(count_num_static,num_static):
     url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
     tran_num = "K"
-    num = 50
-    count_num = 0
+    num = num_static
+    count_num = count_num_static
     while num < 9900:
         try:
             tran_num_u = tran_num + str(num)
 
             text = crawl(url + tran_num_u)
             if not text:
-                continue
+                count_num_static=count_num+1
+                num_static=num
+                print(tran_num_u)
+                print(count_num)
+                break
             # text = crawl("https://search.12306.cn/search/v1/h5/search?callback=jQuery110201481886827579022_1567752183819&keyword=" + tran_num_u + "&suorce=&action=&_=1567752183845")
             json_train = json.loads(text[text.find("(") + 1:text.find(")")])
             # print(json_train)
@@ -159,15 +163,20 @@ def gen_train_num():
                     print(count_num)
                     print(res['msg'])
                     count_num += 1
-            i += 1
+                i += 1
             num += 1
         except Exception as e:
+            print(tran_num_u)
+            print(count_num)
             print(num)
 
 
 if __name__ == '__main__':
+    count_num_static = 106
+    num_static = 235
     while True:
-        gen_train_num()
+
+        gen_train_num(count_num_static,num_static)
         # gen_station()
         # gen_info()
         # time.sleep(60 * CRAWL_INTERVAL)
