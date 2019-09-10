@@ -26,10 +26,10 @@ celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites();
 train_nums = get_train_nums();
-num_static1 = 3257;
-count_num_static1 = 715;
+num_static1 = 1;
+count_num_static1 = 5000;
 
-#262 567
+#715 3880
 # websites = get_websites_desc()
 
 @celery_app.task
@@ -130,32 +130,39 @@ def gen_station():
 
 
 # 刷新车次关系信息
-def gen_station_num_relation(num_static, count_num_static):
-    for train_num in train_nums[:]:
-        url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
-        url_parm_date="&leftTicketDTO.train_date="
-        url_suffix="&rand_code="
-        param_date=time.strftime('%Y-%m-%d',time.localtime(time.time()))+1
-        text = crawl(url + train_num.train_no+url_parm_date+param_date+url_suffix)
-        json_train_msg = json.loads(text)
-        if ((json_train_msg['data']['data'] is not None)):
-            for relation in json_train_msg['data']['data']:
-                relation_info = {
-                    'arrive_time': relation['arrive_time'],
-                    'train_code': relation['station_train_code'],
-                    'running_time': relation['running_time'],
-                    'start_time': relation['start_time'],
-                    'station_name': relation['station_name'],
-                    'arrive_day_diff': relation['arrive_day_diff'],
-                    'station_no': relation['station_no']
-                }
-                res = create_train_relation_info(**relation_info)
+def gen_station_num_relation():
+    try:
+        for train_num in train_nums[:]:
+            url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
+            url_parm_date="&leftTicketDTO.train_date="
+            url_suffix="&rand_code="
+            param_date=datetime.date.today()+ datetime.timedelta(days=1)
+            text = crawl(url + train_num.train_no+url_parm_date+str(param_date)+url_suffix)
+            json_train_msg = json.loads(text)
+            if ((json_train_msg['data']['data'] is not None)):
+                for relation in json_train_msg['data']['data']:
+                    relation_info = {
+                        'arrive_time': relation['arrive_time'],
+                        'train_code': relation['station_train_code'],
+                        'running_time': relation['running_time'],
+                        'start_time': relation['start_time'],
+                        'station_name': relation['station_name'],
+                        'arrive_day_diff': relation['arrive_day_diff'],
+                        'station_no': relation['station_no']
+                    }
+                    res = create_train_relation_info(**relation_info)
+                    print(res['msg'])
+    except Exception as e:
 
+        print(e)
+        print("异常 已爬取到车次：" + str(train_num.train_code))
+        time.sleep(60 * CRAWL_INTERVAL)
 
 # 刷新车次信息
 def gen_train_num(num_static, count_num_static):
     url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
-    tran_num = "K"
+    tran_num = "G"
+    # tran_num = "K"
     global count_num_static1
     global num_static1
     num = num_static
@@ -206,7 +213,14 @@ def gen_train_num(num_static, count_num_static):
             time.sleep(60 * CRAWL_INTERVAL)
 
 if __name__ == '__main__':
-
+    # logging.basicConfig(level=logging.DEBUG,  # 控制台打印的日志级别
+    #                     filename='new.log',
+    #                     filemode='a',  ##模式，有w和a，w就是写模式，每次都会重新写日志，覆盖之前的日志
+    #                     # a是追加模式，默认如果不写的话，就是追加模式
+    #                     format=
+    #                     '%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'
+    #                     # 日志格式
+    #                     )
     while True:
         # pool = Pool(processes=cpu_count())
         # pool.map(gen_train_num, num_static1)

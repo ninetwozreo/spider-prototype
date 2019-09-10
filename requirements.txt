@@ -1,6 +1,6 @@
-
+bs4==0.0.1
 pymssql==2.1.4
-
+requests==2.22.0
 amqp==2.2.2
 backports-abc==0.5
 beautifulsoup4==4.6.0
