@@ -332,26 +332,61 @@ def create_train_relation_info(**kwargs):
 
     try:
         res = {"success": False, "msg": "", 'station': None}
-        trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_code=kwargs["train_code"],station_name=kwargs["station_name"]).first()
+        trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_no=kwargs["train_no"],station_name=kwargs["station_name"]).first()
         if trainNumStationRelation:
             res["msg"] = "关系已存在"
             return res
         session.add(
-            TrainNumStationRelation( arrive_time=kwargs["arrive_time"],
+            TrainNumStationRelation( arrive_time=kwargs["arrive_time"],train_no=kwargs["train_no"],
                      train_code=kwargs["train_code"], running_time=kwargs["running_time"],
                       start_time=kwargs["start_time"], station_name=kwargs["station_name"],
                       arrive_day_diff=kwargs["arrive_day_diff"],station_no=kwargs["station_no"]))
         # session.commit()
         session.flush()
-        # trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_code=kwargs["train_code"]).first()
+        trainNumStationRelation = session.query(TrainNumStationRelation).filter_by(train_code=kwargs["train_code"],station_name=kwargs["station_name"]).first()
         res["success"] = True
-        # res["trainNumStationRelation"] = trainNumStationRelation
+        res["trainNumStationRelation"] = trainNumStationRelation
         return res
     except Exception as e:
         # print(str(e))
         # session.rollback()
         res["msg"] = "创建出错"
         return res
+#更新车次'id': count_num,
+def train_num_update(**kwargs):
+        try:
+            res = {"success": False, "msg": ""}
+            trainNum = session.query(TrainNum).filter_by(id=kwargs["id"]).first()
+            # profile = session.query(CompanyProfle).filter_by(company_id=kwargs["company_id"]).first()
+            if kwargs["useful"] != trainNum.useful:
+                trainNum.useful = kwargs["useful"]
+
+            if kwargs["from_station"] != trainNum.from_station:
+                trainNum.from_station = kwargs["from_station"]
+
+            if kwargs["to_station"] != trainNum.to_station:
+                trainNum.to_station = kwargs["to_station"]
+
+            if kwargs["total_station_num"] != trainNum.total_station_num:
+                trainNum.total_station_num = kwargs["total_station_num"]
+
+            if kwargs["train_code"] != trainNum.train_code:
+                trainNum.train_code = kwargs["train_code"]
+
+            if kwargs["train_no"] != trainNum.train_no:
+                trainNum.train_no = kwargs["train_no"]
+
+            # session.commit()
+            session.flush()
+            res["success"] = True
+            return res
+        except Exception as e:
+            # print(str(e))
+            # session.rollback()
+            res["msg"] = "更新出错"
+            return res
+
+
 #创建车次'id': count_num,
 
 def create_train_num(**kwargs):

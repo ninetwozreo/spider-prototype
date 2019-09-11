@@ -10,8 +10,9 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 
 import time
-import random
-from config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL
+import logging
+from utils.parse_until import to_dict
+from config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL,NUM_STATIC,COUNT_NUM_STATIC,TRAIN_NUM_HEAD
 from db_access import *
 from utils.blacklist import blacklist_site, blacklist_company
 from utils.content_process import complement_url, check_content
@@ -26,9 +27,30 @@ celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites();
 train_nums = get_train_nums();
-num_static1 = 1;
-count_num_static1 = 5000;
+num_static1 =NUM_STATIC;
+count_num_static1 = COUNT_NUM_STATIC;
 
+# -------日志-------------
+logger = logging.getLogger()  # 不加名称设置root logger
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s: - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
+
+# 使用FileHandler输出到文件
+fh = logging.FileHandler('log.out')
+fh.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+
+# 使用StreamHandler输出到屏幕
+ch = logging.StreamHandler()
+ch.setLevel(logging.WARNING)
+ch.setFormatter(formatter)
+
+# 添加两个Handler
+logger.addHandler(ch)
+logger.addHandler(fh)
+# --------------------
 #715 3880
 # websites = get_websites_desc()
 
@@ -87,6 +109,8 @@ def extract(w_id):
             log(ERROR, str(e))
 
 
+
+
 def gen_info():
     # random.shuffle(websites)
     for w in websites[:]:
@@ -126,12 +150,15 @@ def gen_station():
         count += 1
         res = create_station(**station_info)
         if (not res["success"]):
-            print(res["msg"])
+            logger.warning(res["msg"])
 
 
 # 刷新车次关系信息
 def gen_station_num_relation():
+    index_num=0
+    global train_nums
     try:
+
         for train_num in train_nums[:]:
             url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
             url_parm_date="&leftTicketDTO.train_date="
@@ -141,6 +168,8 @@ def gen_station_num_relation():
             json_train_msg = json.loads(text)
             if ((json_train_msg['data']['data'] is not None)):
                 for relation in json_train_msg['data']['data']:
+                    if relation['station_train_code'] == 'K29':
+                        print("")
                     relation_info = {
                         'arrive_time': relation['arrive_time'],
                         'train_code': relation['station_train_code'],
@@ -148,27 +177,38 @@ def gen_station_num_relation():
                         'start_time': relation['start_time'],
                         'station_name': relation['station_name'],
                         'arrive_day_diff': relation['arrive_day_diff'],
-                        'station_no': relation['station_no']
+                        'station_no': relation['station_no'],
+                        'train_no': train_num.train_no
                     }
                     res = create_train_relation_info(**relation_info)
-                    print(res['msg'])
-    except Exception as e:
+                    logger.info('this is info message')
+                    if not res['success']:
+                        logger.warning(res['msg'])
+                    else:
+                        logger.critical('保存成功第'+str(res['trainNumStationRelation'].id)+'条'+str(index_num))
+            else:
+                train_num.useful='F'
+                res =train_num_update(**to_dict(train_num))
+                logger.critical('已更新状态' + str(train_num.train_code))
 
-        print(e)
-        print("异常 已爬取到车次：" + str(train_num.train_code))
+            index_num+=1
+    except Exception as e:
+        train_nums=train_nums[index_num:len(train_nums)]
+        logger.warning(e)
+        logger.warning("异常 已爬取到车次：" + str(train_num.train_code))
         time.sleep(60 * CRAWL_INTERVAL)
 
 # 刷新车次信息
 def gen_train_num(num_static, count_num_static):
     url = "https://search.12306.cn/search/v1/h5/search?callback=jQuery19108124885820364023_1567759292307&keyword="
-    tran_num = "G"
+    tran_num = TRAIN_NUM_HEAD
     # tran_num = "K"
     global count_num_static1
     global num_static1
     num = num_static
     count_num = count_num_static
 
-    while num < 9900:
+    while num < 10000:
         try:
             tran_num_u = tran_num + str(num)
 
@@ -177,8 +217,7 @@ def gen_train_num(num_static, count_num_static):
             if not text:
                 count_num_static1 = count_num
                 num_static1 = num
-                print("中断 已爬取到车次：" + str(tran_num_u))
-                print("数据主键已经到" + str(count_num))
+                logger.info("中断 已爬取到车次：" + str(tran_num_u)+"数据主键已经到" + str(count_num))
                 break
             # text = crawl("https://search.12306.cn/search/v1/h5/search?callback=jQuery110201481886827579022_1567752183819&keyword=" + tran_num_u + "&suorce=&action=&_=1567752183845")
             json_train = json.loads(text[text.find("(") + 1:text.find(")")])
@@ -199,33 +238,23 @@ def gen_train_num(num_static, count_num_static):
                         'to_station': info['to_station']
                         }
                         res = create_train_num(**tran_num_info)
-                        print("已保存成功:" + str(count_num) + "条")
-                        print(res['msg'])
+                        logger.critical("已保存成功:" + str(count_num) + "条"+res['msg'])
                         count_num += 1
                     i += 1
             num += 1
         except Exception as e:
             count_num_static1 = count_num-1
             num_static1 = num
-            print(e)
-            print("异常 已爬取到车次：" + str(tran_num_u))
-            print("数据主键已经到" + str(count_num))
+            logger.warning(e)
+            logger.warning("异常 已爬取到车次：" + str(tran_num_u)+"数据主键已经到" + str(count_num))
             time.sleep(60 * CRAWL_INTERVAL)
 
 if __name__ == '__main__':
-    # logging.basicConfig(level=logging.DEBUG,  # 控制台打印的日志级别
-    #                     filename='new.log',
-    #                     filemode='a',  ##模式，有w和a，w就是写模式，每次都会重新写日志，覆盖之前的日志
-    #                     # a是追加模式，默认如果不写的话，就是追加模式
-    #                     format=
-    #                     '%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'
-    #                     # 日志格式
-    #                     )
     while True:
         # pool = Pool(processes=cpu_count())
         # pool.map(gen_train_num, num_static1)
-        gen_train_num(num_static1, count_num_static1)
+        # gen_train_num(num_static1, count_num_static1)
         # gen_station()
-        # gen_station_num_relation()
+        gen_station_num_relation()
         # gen_info()
         # time.sleep(60 * CRAWL_INTERVAL)

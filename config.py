@@ -4,6 +4,7 @@
 # MYSQL配置
 DB = {
     'HOST': '127.0.0.1',
+    # 'HOST': '129.28.203.109',
     'PORT': 3306,
     'DB_NAME': 'jarvers',
     'USER': 'root',
@@ -24,9 +25,17 @@ EMAIL = {
 SEND_MAIL_INTERVAL = 0.5
 
 
-# 新闻抓取频率(分钟)
-CRAWL_INTERVAL = 10
+# 异常休息时间(分钟)
+CRAWL_INTERVAL = 0.5
 
+# 车次主键
+NUM_STATIC = 75
+
+# 数据主键
+COUNT_NUM_STATIC=5074
+
+# 车次头
+TRAIN_NUM_HEAD='G'
 # 页面显示info时间限制(分钟)
 TIME_LIMIT = 60 * 24 * 3
 
