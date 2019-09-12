@@ -11,7 +11,7 @@ sys.path.append(BASE_DIR)
 
 import time
 import logging
-from utils.parse_until import to_dict
+from utils.parse_until import *
 from config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL,NUM_STATIC,COUNT_NUM_STATIC,TRAIN_NUM_HEAD
 from db_access import *
 from utils.blacklist import blacklist_site, blacklist_company
@@ -163,12 +163,14 @@ def gen_station_num_relation():
             url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
             url_parm_date="&leftTicketDTO.train_date="
             url_suffix="&rand_code="
-            param_date=datetime.date.today()+ datetime.timedelta(days=1)
+            param_date=datetime.date.today()+ datetime.timedelta(days=3)
             text = crawl(url + train_num.train_no+url_parm_date+str(param_date)+url_suffix)
+            if(train_num.train_no=='0300000K4009'):
+                print("")
             json_train_msg = json.loads(text)
             if ((json_train_msg['data']['data'] is not None)):
                 for relation in json_train_msg['data']['data']:
-                    if relation['station_train_code'] == 'K29':
+                    if relation['station_train_code'] == 'K40':
                         print("")
                     relation_info = {
                         'arrive_time': relation['arrive_time'],
@@ -189,14 +191,15 @@ def gen_station_num_relation():
             else:
                 train_num.useful='F'
                 res =train_num_update(**to_dict(train_num))
-                logger.critical('已更新状态' + str(train_num.train_code))
+                if(res['success']):
+                    logger.critical('已更新状态' + str(train_num.train_code))
 
             index_num+=1
     except Exception as e:
         train_nums=train_nums[index_num:len(train_nums)]
         logger.warning(e)
         logger.warning("异常 已爬取到车次：" + str(train_num.train_code))
-        time.sleep(60 * CRAWL_INTERVAL)
+        time.sleep(10 * CRAWL_INTERVAL)
 
 # 刷新车次信息
 def gen_train_num(num_static, count_num_static):
@@ -255,6 +258,7 @@ if __name__ == '__main__':
         # pool.map(gen_train_num, num_static1)
         # gen_train_num(num_static1, count_num_static1)
         # gen_station()
-        gen_station_num_relation()
+        # gen_station_num_relation()
+        print(LatLon2XY(118.8,31.9))
         # gen_info()
         # time.sleep(60 * CRAWL_INTERVAL)
