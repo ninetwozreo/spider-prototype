@@ -322,10 +322,38 @@ def delete_feeds():
         # session.rollback()
         return False
 
+def get_train_stations():
+    train_stations = session.query(Station).all()
+    return train_stations
+
 def get_train_nums():
     train_nums = session.query(TrainNum).all()
     return train_nums
 
+#创建经纬度坐标点
+
+def create_point_msg_info(**kwargs):
+
+    try:
+        res = {"success": False, "msg": "", 'point': None}
+        point = session.query(Point).filter_by(point_x=kwargs["point_x"],point_y=kwargs["point_y"],).first()
+        if point:
+            res["msg"] = "关系已存在"
+            return res
+        session.add(
+            Point( station_name=kwargs["station_name"],station_id=kwargs["station_id"],
+                   point_x=kwargs["point_x"], point_y=kwargs["point_y"]))
+        # session.commit()
+        session.flush()
+        point = session.query(Point).filter_by(point_x=kwargs["point_x"]).first()
+        res["success"] = True
+        res["point"] = point
+        return res
+    except Exception as e:
+        # print(str(e))
+        # session.rollback()
+        res["msg"] = "创建出错"
+        return res
 #创建车次与车站的关联关系'id': count_num,
 
 def create_train_relation_info(**kwargs):

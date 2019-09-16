@@ -171,6 +171,18 @@ class TrainNumStationRelation(Base):
     train_id=Column(Integer)
     station_id=Column(Integer)
 
+# 经纬度 坐标信息
+class Point(Base):
+    """
+        id X坐标 Y坐标 对应站id  站名
+        """
+
+    __tablename__ = 'point_msg'
+    id = Column(Integer, primary_key=True)
+    point_x = Column(String(64))
+    point_y = Column(String(64))
+    station_id = Column(Integer)
+    station_name = Column(String(64))
 # 火车车次
 class TrainNum(Base):
     """
@@ -186,6 +198,7 @@ class TrainNum(Base):
     train_no=Column(String(64))
     from_station=Column(String(64))
     to_station=Column(String(64))
+    station_type=Column(String(4))
 
     # full_pinyin = Column(String(256))
 

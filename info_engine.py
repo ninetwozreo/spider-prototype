@@ -12,7 +12,7 @@ sys.path.append(BASE_DIR)
 import time
 import logging
 from utils.parse_until import *
-from config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL,NUM_STATIC,COUNT_NUM_STATIC,TRAIN_NUM_HEAD
+from config import CELERY_BROKER, CELERY_BACKEND, CRAWL_INTERVAL, NUM_STATIC, COUNT_NUM_STATIC, TRAIN_NUM_HEAD
 from db_access import *
 from utils.blacklist import blacklist_site, blacklist_company
 from utils.content_process import complement_url, check_content
@@ -20,6 +20,7 @@ from utils.diff import diff_file
 from utils.html_downloader import crawl
 from bs4 import BeautifulSoup
 from celery import Celery
+
 # from multiprocessing import Pool, cpu_count
 
 celery_app = Celery('info_engine', broker=CELERY_BROKER, backend=CELERY_BACKEND)
@@ -27,7 +28,8 @@ celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 
 websites = get_websites();
 train_nums = get_train_nums();
-num_static1 =NUM_STATIC;
+train_stations = get_train_stations()
+num_static1 = NUM_STATIC;
 count_num_static1 = COUNT_NUM_STATIC;
 
 # -------日志-------------
@@ -50,8 +52,10 @@ ch.setFormatter(formatter)
 # 添加两个Handler
 logger.addHandler(ch)
 logger.addHandler(fh)
+
+
 # --------------------
-#715 3880
+# 715 3880
 # websites = get_websites_desc()
 
 @celery_app.task
@@ -109,13 +113,55 @@ def extract(w_id):
             log(ERROR, str(e))
 
 
-
-
 def gen_info():
     # random.shuffle(websites)
     for w in websites[:]:
         if (w.url not in blacklist_site) and (w.company.name_cn not in blacklist_company):
             extract.delay(w.id)
+
+
+# 获取坐标信息
+def get_points():
+    # id = Column(Integer, primary_key=True)
+    # point_x = Column(String(64))
+    # point_y = Column(String(64))
+    # station_id = Column(Integer)
+    # station_name
+    index_num=0
+    global train_stations
+    url = "https://apis.map.qq.com/jsapi?qt=poi&wd="
+    # url = "https://apis.map.qq.com/jsapi?qt=geoc&addr="
+    try:
+        for station in train_stations:
+            text = crawl(url + station.name + '站')
+            json_train_station_msg = json.loads(text)
+            if (json_train_station_msg['detail'].__contains__('pois')):
+                point = json_train_station_msg['detail']['pois'][0]
+            else:
+                train_stations = train_stations[index_num+1:len(train_stations)]
+                continue
+            if(index_num==42):
+                print("")
+            point_info = {
+                'point_x': point['pointx'],
+                'point_y': point['pointy'],
+                'station_id': station.id,
+                'station_name': station.name
+            }
+            res=create_point_msg_info(**point_info)
+            index_num += 1
+            print(index_num)
+            if not res['success']:
+                logger.warning(res['msg'])
+            else:
+                logger.critical('保存成功第' + str(res['point'].id) + '条')
+
+    except Exception as e:
+        train_stations = train_stations[index_num:len(train_stations)]
+        logger.warning(e)
+        logger.warning("异常 已爬取到车站：" + str(station.name))
+        time.sleep(10 * CRAWL_INTERVAL)
+
 
 
 # 刷新车站信息
@@ -155,17 +201,17 @@ def gen_station():
 
 # 刷新车次关系信息
 def gen_station_num_relation():
-    index_num=0
+    index_num = 0
     global train_nums
     try:
 
         for train_num in train_nums[:]:
-            url="https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
-            url_parm_date="&leftTicketDTO.train_date="
-            url_suffix="&rand_code="
-            param_date=datetime.date.today()+ datetime.timedelta(days=3)
-            text = crawl(url + train_num.train_no+url_parm_date+str(param_date)+url_suffix)
-            if(train_num.train_no=='0300000K4009'):
+            url = "https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no="
+            url_parm_date = "&leftTicketDTO.train_date="
+            url_suffix = "&rand_code="
+            param_date = datetime.date.today() + datetime.timedelta(days=3)
+            text = crawl(url + train_num.train_no + url_parm_date + str(param_date) + url_suffix)
+            if (train_num.train_no == '0300000K4009'):
                 print("")
             json_train_msg = json.loads(text)
             if ((json_train_msg['data']['data'] is not None)):
@@ -187,19 +233,20 @@ def gen_station_num_relation():
                     if not res['success']:
                         logger.warning(res['msg'])
                     else:
-                        logger.critical('保存成功第'+str(res['trainNumStationRelation'].id)+'条'+str(index_num))
+                        logger.critical('保存成功第' + str(res['trainNumStationRelation'].id) + '条' + str(index_num))
             else:
-                train_num.useful='F'
-                res =train_num_update(**to_dict(train_num))
-                if(res['success']):
+                train_num.useful = 'F'
+                res = train_num_update(**to_dict(train_num))
+                if (res['success']):
                     logger.critical('已更新状态' + str(train_num.train_code))
 
-            index_num+=1
+            index_num += 1
     except Exception as e:
-        train_nums=train_nums[index_num:len(train_nums)]
+        train_nums = train_nums[index_num:len(train_nums)]
         logger.warning(e)
         logger.warning("异常 已爬取到车次：" + str(train_num.train_code))
         time.sleep(10 * CRAWL_INTERVAL)
+
 
 # 刷新车次信息
 def gen_train_num(num_static, count_num_static):
@@ -220,7 +267,7 @@ def gen_train_num(num_static, count_num_static):
             if not text:
                 count_num_static1 = count_num
                 num_static1 = num
-                logger.info("中断 已爬取到车次：" + str(tran_num_u)+"数据主键已经到" + str(count_num))
+                logger.info("中断 已爬取到车次：" + str(tran_num_u) + "数据主键已经到" + str(count_num))
                 break
             # text = crawl("https://search.12306.cn/search/v1/h5/search?callback=jQuery110201481886827579022_1567752183819&keyword=" + tran_num_u + "&suorce=&action=&_=1567752183845")
             json_train = json.loads(text[text.find("(") + 1:text.find(")")])
@@ -232,25 +279,26 @@ def gen_train_num(num_static, count_num_static):
                     if json_train['data'][i]['params']['station_train_code'] == tran_num_u:
                         info = json_train['data'][i]['params']
                         tran_num_info = {
-                        'id': count_num,
-                        'total_station_num': info['total_num'],
-                        'useful': 'T',
-                        'train_no': info['train_no'],
-                        'train_code': info['station_train_code'],
-                        'from_station': info['from_station'],
-                        'to_station': info['to_station']
+                            'id': count_num,
+                            'total_station_num': info['total_num'],
+                            'useful': 'T',
+                            'train_no': info['train_no'],
+                            'train_code': info['station_train_code'],
+                            'from_station': info['from_station'],
+                            'to_station': info['to_station']
                         }
                         res = create_train_num(**tran_num_info)
-                        logger.critical("已保存成功:" + str(count_num) + "条"+res['msg'])
+                        logger.critical("已保存成功:" + str(count_num) + "条" + res['msg'])
                         count_num += 1
                     i += 1
             num += 1
         except Exception as e:
-            count_num_static1 = count_num-1
+            count_num_static1 = count_num - 1
             num_static1 = num
             logger.warning(e)
-            logger.warning("异常 已爬取到车次：" + str(tran_num_u)+"数据主键已经到" + str(count_num))
+            logger.warning("异常 已爬取到车次：" + str(tran_num_u) + "数据主键已经到" + str(count_num))
             time.sleep(60 * CRAWL_INTERVAL)
+
 
 if __name__ == '__main__':
     while True:
@@ -259,6 +307,5 @@ if __name__ == '__main__':
         # gen_train_num(num_static1, count_num_static1)
         # gen_station()
         # gen_station_num_relation()
-        print(LatLon2XY(118.8,31.9))
-        # gen_info()
+        get_points()
         # time.sleep(60 * CRAWL_INTERVAL)
