@@ -6,7 +6,8 @@ DB = {
     'HOST': '127.0.0.1',
     # 'HOST': '129.28.203.109',
     'PORT': 3306,
-    'DB_NAME': 'jarvers',
+    'DB_NAME': 'jarver_t0',
+    # 'DB_NAME': 'jarvers',
     'USER': 'root',
     'PASSWORD' : '000000'
 }
@@ -29,10 +30,10 @@ SEND_MAIL_INTERVAL = 0.5
 CRAWL_INTERVAL = 0.5
 
 # 车次主键
-NUM_STATIC = 75
+NUM_STATIC = 1
 
 # 数据主键
-COUNT_NUM_STATIC=5074
+COUNT_NUM_STATIC=1
 
 # 车次头
 TRAIN_NUM_HEAD='G'
