@@ -33,8 +33,9 @@
 使用方法：
 clone下来
 
-建立空数据库 并在config.py中配置
+建立空数据库,编码为utf-8， 并在config.py中配置数据源信息
 
+运行 pip install -r requirements.txt
 运行 models.py
 
 运行info_engine.py

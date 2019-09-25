@@ -147,7 +147,7 @@ def create_station(**kwargs):
         if station:
             res["msg"] = "车站已存在"
             return res
-        session.add(Station(id=kwargs["id"], small_abbr=kwargs["small_abbr"], big_abbr=kwargs["big_abbr"], name=kwargs["name"], full_pinyin=kwargs["full_pinyin"]))
+        session.add(Station( small_abbr=kwargs["small_abbr"], big_abbr=kwargs["big_abbr"], name=kwargs["name"], full_pinyin=kwargs["full_pinyin"]))
         # session.commit()
         session.flush()
         station = session.query(Station).filter_by(big_abbr=kwargs["big_abbr"]).first()
@@ -155,7 +155,7 @@ def create_station(**kwargs):
         res["station"] = station
         return res
     except Exception as e:
-        # print(str(e))
+        print(str(e))
         # session.rollback()
         res["msg"] = "创建出错"
         return res
