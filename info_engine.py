@@ -51,15 +51,7 @@ ch.setFormatter(formatter)
 
 # 添加两个Handler
 logger.addHandler(ch)
-# logger.addHandler(fh)
-
-
-# --------------------
-# 715 3880
-# websites = get_websites_desc()
-
-
-
+logger.addHandler(fh)
 
 
 
@@ -105,8 +97,7 @@ def gen_station():
     text = crawl("https://www.12306.cn/index/script/core/common/station_name_v10037.js")
     count = 0
     global sign
-    if (len(text) <=7):
-        sign='train_num'
+
     while len(text) > 7:
         # if count==0:
         text = text[text.find("|") + 1:len(text)]
@@ -136,7 +127,8 @@ def gen_station():
             logger.warning(res["msg"])
         else:
             logger.info(res["station"].name)
-
+        if (len(text) <=7):
+            sign='train_num'
 # 刷新车次关系信息
 def gen_station_num_relation():
     index_num = 0
