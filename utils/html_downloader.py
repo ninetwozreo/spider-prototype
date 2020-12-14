@@ -48,7 +48,42 @@ def crawl(url):
         return text
     return False
 
+def crawl_law_post(url,data):
+    s = requests.session()
+    headers = {
+        
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+        "X-Requested-With": "XMLHttpRequest"
+    }
+    response = s.post(url, headers=headers, data=data,timeout=30)
+    
+    if response.status_code == 200:
+        text = response.text
+        encoding = response.encoding
+        apparent_encoding = response.apparent_encoding
 
+        if encoding not in ['utf-8', 'UTF-8']:
+            try:
+                if apparent_encoding in ['utf-8', 'UTF-8', 'UTF-8-SIG']:
+                    text = response.text.encode(apparent_encoding).decode('utf8')
+                else:
+                    if encoding == 'gb2312' and apparent_encoding == 'GB2312':
+                        text = response.text.encode('utf8').decode('utf8')
+                    elif encoding == 'ISO-8859-1' and apparent_encoding == 'ISO-8859-1':
+                        text = response.text.encode('utf8').decode('utf8')
+                    elif encoding == 'ISO-8859-1' and apparent_encoding == 'Big5':
+                        text = response.text.encode(encoding).decode('big5').encode('utf8').decode('utf8')
+                    elif encoding == 'big5' and apparent_encoding == 'Big5':
+                        text = response.text.encode(encoding).decode('big5').encode('utf8').decode('utf8')
+                    else:
+                        text = response.text.encode(encoding).decode('gbk').encode('utf8').decode('utf8')
+
+            except:
+                # log(ERROR, '编码错误 [{encoding}] [{url}]'.format(encoding=encoding, url=url))
+                return False
+        # save_html(text)
+        return text
+    return False
 
 
 
