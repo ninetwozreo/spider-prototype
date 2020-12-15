@@ -2,6 +2,7 @@
 
 import os
 import json
+import re
 import sys
 import requests
 
@@ -36,6 +37,9 @@ stype = "chl";
 #关键字
 keyword ="a";
 
+#每页条
+pagesize =10;
+
 # -------日志-------------
 logger = logging.getLogger()  # 不加名称设置root logger
 logger.setLevel(logging.DEBUG)
@@ -59,51 +63,96 @@ logger.addHandler(fh)
 
 
 
-# 获取坐标信息
+# 获取到指定类别的所有信息
+def get_useful_data(rc_data_html):
+    local_res=[]
+    datas=BeautifulSoup(rc_data_html,'html.parser').find_all('div',class_='block')
+    for one in datas:
+        oneData={}
+        #在这里添加所需数据
+        oneData["title"] =one.find('a').text
+
+        local_res.append(oneData)
+    return local_res
+# 获取网页信息
 def get_pku_law():
     print(keyword)
     index_num=0
     url = "https://www.pkulaw.com"
-    json_data={
+    chl_json_data={
         "Keywords":keyword,
         "PreviousLib": stype,
         "PreKeywords":keyword
     }
+    rs_json_data={
+        "Menu": "law",
+        "RangeType": "Piece",
+        "IsSynonymSearch": False,
+        "LastLibForChangeColumn": "chl",
+        "IsAdv": False,
+        "OrderByIndex":4,
+        "RecordShowType": "List",
+        "Keywords":keyword,
+        #匹配方式
+        "MatchType": "Exact",
+        "Library": "chl",
+        "ClassFlag": "chl",
+        "SearchKeywordType":"DefaultSearch",
+        "PreviousLib": stype,
+        "PreKeywords":keyword,
+        "AfterSearch": True,
+        "ClassCodeKey":"wq",
+        "ShowType": "Default",
+        "QueryOnClick": False,
+        "Pager.PageIndex": 0,
+        "GroupByIndex": 0,
+        "OldPageIndex": 0,
+        "Pager.PageSize": pagesize
+    }
     datau="Menu=law&Keywords=old&PreKeywords="+keyword+"&SearchKeywordType=DefaultSearch&MatchType=Exact&RangeType=Piece&Library=chl&ClassFlag=chl&GroupLibraries=&QuerySearchCondition=DefaultSearch%2BExact%2BPiece%2B0&QueryOnClick=False&AfterSearch=True&RequestFrom=btnSearch&SearchInResult=&PreviousLib=chl&IsSynonymSearch=false&RecordShowType=List&ClassCodeKey=%2C%2C%2C%2C%2C&IsSearchErrorKeyword=&X-Requested-With=XMLHttpRequest"
     local_path="/law/chl"
-    data={""}
+    record_path="/law/search/RecordSearch"
+    res={}
     try:
         # main_page=requests.post(url+local_path,headers=header,data=datau)
-        data_hrml=crawl_law_post(url+local_path,json_data)
-        # main_page=crawl(url);
-        for station in train_stations:
-            text = crawl(url + station.name + '火车站')
-            json_train_station_msg = json.loads(text)
-            if (json_train_station_msg['detail'].__contains__('pois')):
-                point = json_train_station_msg['detail']['pois'][0]
-            else:
-                train_stations = train_stations[index_num+1:len(train_stations)]
-                continue
-            if(index_num==42):
-                print("")
-            point_info = {
-                'point_x': point['pointx'],
-                'point_y': point['pointy'],
-                'station_id': station.id,
-                'station_name': station.name
-            }
-            res=create_point_msg_info(**point_info)
-            index_num += 1
-            print(index_num)
-            if not res['success']:
-                logger.warning(res['msg'])
-            else:
-                logger.critical('保存成功第' + str(res['point'].id) + '条')
+        data_hrml=crawl_law_post(url+local_path,chl_json_data)
+        group_map={}
+        group_html=BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='grouping-title')
+        #循环获取group 信息，包含名称和代号用于后续请求
+        for group in group_html:
+            group_map[group.find('a').text]=group.find('a').attrs.get('groupvalue')
+        
+        for name in group_map:
+            page_index=0
+            cur_map=[]
+            #获取每一项的篇数
+            cur_size=int(re.sub( "\D" , "", name))
+            rs_json_data["GroupByIndex"]=page_index
+            rs_json_data["Pager.PageIndex"]=page_index
+            rs_json_data["ClassCodeKey"]=","+group_map[name]+",,,,"
+            
+            rc_data_html=crawl_law_post(url+record_path,rs_json_data)
+            cur_map=get_useful_data(rc_data_html)
+            cur_size-=pagesize
+            #...
+            while(cur_size>0):
+                cur_size-=pagesize
+                page_index+=1
+                rs_json_data["GroupByIndex"]=page_index
+                rs_json_data["Pager.PageIndex"]=page_index
+                rc_data_html=crawl_law_post(url+record_path,rs_json_data)
+                tem=get_useful_data(rc_data_html)
+                cur_map+=tem
+                # cur_map.extend(get_useful_data(rc_data_html))
+            res[name]=cur_map
+        # BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='list-title');
+        main_page=crawl(url);
+    
 
     except Exception as e:
-        train_stations = train_stations[index_num:len(train_stations)]
+        # train_stations = train_stations[index_num:len(train_stations)]
         logger.warning(e)
-        logger.error("异常终止" + str(station.name))
+        logger.error("异常终止" )
         # time.sleep(10 * CRAWL_INTERVAL)
 
 # 刷新车站信息
