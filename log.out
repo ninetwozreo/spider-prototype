@@ -24,3 +24,35 @@
 2020-12-17 17:36:45 - root - ERROR: - “Ï≥£÷’÷π
 2020-12-17 17:59:08 - root - WARNING: - HTTPSConnectionPool(host='www.pkulaw.com', port=443): Read timed out. (read timeout=30)
 2020-12-17 17:59:08 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:35:22 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:35:22 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:37:21 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:37:21 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:37:38 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:37:38 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:37:48 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:37:48 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:38:40 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:38:40 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:39:21 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:39:21 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:39:36 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:39:36 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:40:03 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:40:03 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:40:10 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:40:10 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:40:54 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:40:54 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:42:04 - root - WARNING: - the JSON object must be str, bytes or bytearray, not bool
+2020-12-17 18:42:04 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:44:11 - root - WARNING: - 'function' object has no attribute 'error'
+2020-12-17 18:44:11 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:44:45 - root - WARNING: - 'function' object has no attribute 'error'
+2020-12-17 18:44:46 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:45:11 - root - ERROR: - «Î«Û ß∞‹
+2020-12-17 18:45:11 - root - WARNING: - local variable 'group_map' referenced before assignment
+2020-12-17 18:45:11 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 18:47:09 - root - ERROR: - «Î«Û ß∞‹
+2020-12-17 18:47:09 - root - WARNING: - local variable 'group_map' referenced before assignment
+2020-12-17 18:47:09 - root - ERROR: - “Ï≥£÷’÷π

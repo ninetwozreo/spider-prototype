@@ -140,7 +140,12 @@ def get_pku_law():
     try:
         # main_page=requests.post(url+local_path,headers=header,data=datau)
         #map中key为代码，value为名字
-        group_map=json.loads( crawl_law_post(url+group_get_path,group_json_data))
+        post_res=crawl_law_post(url+group_get_path,group_json_data)
+        if(post_res):
+            group_map=json.loads(post_res)
+        else:
+            logger.error("请求失败")
+            pass
         # group_map={}
         # group_html=BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='grouping-title')
         # #循环获取group 信息，包含名称和代号用于后续请求
@@ -183,7 +188,7 @@ def get_pku_law():
                 sheet.write(i,0,one.get("title")) 
                 i+=1
         # os.mknod("a.xlsx") 
-        execl.save(outputdir+keyword)
+        execl.save(outputdir+'/'+keyword)
         main_page=crawl(url);
 
     except Exception as e:
