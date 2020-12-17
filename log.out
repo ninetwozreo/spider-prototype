@@ -2,3 +2,25 @@
 2020-12-15 16:47:20 - root - ERROR: - “Ï≥£÷’÷π
 2020-12-15 16:52:18 - root - WARNING: - '>' not supported between instances of 'str' and 'int'
 2020-12-15 16:52:18 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 15:16:29 - root - WARNING: - name 'data_hrml' is not defined
+2020-12-17 15:16:29 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 15:19:34 - root - WARNING: - name 'data_hrml' is not defined
+2020-12-17 15:19:34 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 16:41:21 - root - WARNING: - name 'data_hrml' is not defined
+2020-12-17 16:41:21 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 16:42:35 - root - WARNING: - 'str' object has no attribute 'get'
+2020-12-17 16:42:35 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:17:08 - root - WARNING: - [Errno 22] Invalid argument: 'D:\x07'
+2020-12-17 17:17:08 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:17:47 - root - WARNING: - [Errno 13] Permission denied: 'D:/a'
+2020-12-17 17:17:47 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:18:57 - root - WARNING: - [Errno 13] Permission denied: 'D:/a'
+2020-12-17 17:18:57 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:34:17 - root - WARNING: - [Errno 2] No such file or directory: 'e:\\work\\project\\self\\spider-prototype\\law_engine.py/a.xl'
+2020-12-17 17:34:17 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:34:48 - root - WARNING: - [Errno 2] No such file or directory: 'e:\\work\\project\\self\\spider-prototype\\law_engine.py\\a.xl'
+2020-12-17 17:34:48 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:36:45 - root - WARNING: - module 'os' has no attribute 'mknod'
+2020-12-17 17:36:45 - root - ERROR: - “Ï≥£÷’÷π
+2020-12-17 17:59:08 - root - WARNING: - HTTPSConnectionPool(host='www.pkulaw.com', port=443): Read timed out. (read timeout=30)
+2020-12-17 17:59:08 - root - ERROR: - “Ï≥£÷’÷π

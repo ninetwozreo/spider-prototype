@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import xlwt
 import os
 import json
 import re
@@ -30,15 +31,17 @@ celery_app.conf.update(CELERY_TASK_RESULT_EXPIRES=3600)
 # train_nums = get_train_nums();
 # train_stations = get_train_stations_n()
 num_static1 = NUM_STATIC;
+#输出地址
+outputdir = os.getcwd()
 #运行方法标志
 sign = "pkulaw";
 #中央chl或地方lar
-stype = "chl";
+stype = "lar";
+# stype = "chl";
 #关键字
-keyword ="a";
-
+keyword ="老旧小区";
 #每页条
-pagesize =10;
+pagesize =100;
 
 # -------日志-------------
 logger = logging.getLogger()  # 不加名称设置root logger
@@ -70,33 +73,54 @@ def get_useful_data(rc_data_html):
     for one in datas:
         oneData={}
         #在这里添加所需数据
-        oneData["title"] =one.find('a').text
-
+        a=one.find('a');
+        oneData["title"] =a.text
+        oneData["href"] =a.attrs.get('href')
         local_res.append(oneData)
     return local_res
 # 获取网页信息
 def get_pku_law():
     print(keyword)
+    #创建excel文件
+    execl = xlwt.Workbook()
+
     index_num=0
     url = "https://www.pkulaw.com"
+    group_json_data={
+        "library": stype,
+        "className": "EffectivenessDic",
+        # classCodeKeys: 
+        # QueryBase64Request: eyJGaWVsZE5hbWUiOm51bGwsIlZhbHVlIjpudWxsLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjowLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoyLCJDaGlsZE5vZGVzIjpbeyJGaWVsZE5hbWUiOiJLZXl3b3JkU2VhcmNoVHJlZSIsIlZhbHVlIjpudWxsLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjowLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoxLCJDaGlsZE5vZGVzIjpbeyJGaWVsZE5hbWUiOiJEb2N1bWVudE5PIiwiVmFsdWUiOiLogIHml6flsI/ljLoiLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjoxLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoyLCJDaGlsZE5vZGVzIjpbXSwiQW5hbHl6ZXIiOiJpa19tYXhfd29yZCIsIkJvb3N0IjpudWxsLCJNaW5pbXVtX3Nob3VsZF9tYXRjaCI6bnVsbH0seyJGaWVsZE5hbWUiOiJUaXRsZSIsIlZhbHVlIjoi6ICB5pen5bCP5Yy6IiwiUnVsZVR5cGUiOjQsIk1hbnlWYWx1ZVNwbGl0IjoiXHUwMDAwIiwiV29yZE1hdGNoVHlwZSI6MSwiV29yZFJhdGUiOjAsIkNvbWJpbmF0aW9uVHlwZSI6MiwiQ2hpbGROb2RlcyI6W10sIkFuYWx5emVyIjoiaWtfbWF4X3dvcmQiLCJCb29zdCI6bnVsbCwiTWluaW11bV9zaG91bGRfbWF0Y2giOm51bGx9XSwiQW5hbHl6ZXIiOm51bGwsIkJvb3N0IjpudWxsLCJNaW5pbXVtX3Nob3VsZF9tYXRjaCI6bnVsbH1dLCJBbmFseXplciI6bnVsbCwiQm9vc3QiOm51bGwsIk1pbmltdW1fc2hvdWxkX21hdGNoIjpudWxsfQ==
+        "keyword": keyword,
+        # advDic: 
+        # SearchInResult: 
+        "ClassFlag": stype,
+        "KeywordType": "DefaultSearch",
+        "MatchType": "Exact"
+    }
     chl_json_data={
         "Keywords":keyword,
         "PreviousLib": stype,
-        "PreKeywords":keyword
+        "PreKeywords":keyword,
+        "Library": stype,
+        "RecordShowType": "List",
+        "ClassFlag": stype,
+        "PreviousLib": stype
     }
+    
     rs_json_data={
         "Menu": "law",
         "RangeType": "Piece",
         "IsSynonymSearch": False,
-        "LastLibForChangeColumn": "chl",
+        "LastLibForChangeColumn": stype,
         "IsAdv": False,
         "OrderByIndex":4,
         "RecordShowType": "List",
         "Keywords":keyword,
         #匹配方式
         "MatchType": "Exact",
-        "Library": "chl",
-        "ClassFlag": "chl",
+        "Library": stype,
+        "ClassFlag": stype,
         "SearchKeywordType":"DefaultSearch",
         "PreviousLib": stype,
         "PreKeywords":keyword,
@@ -109,27 +133,28 @@ def get_pku_law():
         "OldPageIndex": 0,
         "Pager.PageSize": pagesize
     }
-    datau="Menu=law&Keywords=old&PreKeywords="+keyword+"&SearchKeywordType=DefaultSearch&MatchType=Exact&RangeType=Piece&Library=chl&ClassFlag=chl&GroupLibraries=&QuerySearchCondition=DefaultSearch%2BExact%2BPiece%2B0&QueryOnClick=False&AfterSearch=True&RequestFrom=btnSearch&SearchInResult=&PreviousLib=chl&IsSynonymSearch=false&RecordShowType=List&ClassCodeKey=%2C%2C%2C%2C%2C&IsSearchErrorKeyword=&X-Requested-With=XMLHttpRequest"
     local_path="/law/chl"
+    group_get_path="/Tool/SingleClassResult"
     record_path="/law/search/RecordSearch"
     res={}
     try:
         # main_page=requests.post(url+local_path,headers=header,data=datau)
-        data_hrml=crawl_law_post(url+local_path,chl_json_data)
-        group_map={}
-        group_html=BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='grouping-title')
-        #循环获取group 信息，包含名称和代号用于后续请求
-        for group in group_html:
-            group_map[group.find('a').text]=group.find('a').attrs.get('groupvalue')
+        #map中key为代码，value为名字
+        group_map=json.loads( crawl_law_post(url+group_get_path,group_json_data))
+        # group_map={}
+        # group_html=BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='grouping-title')
+        # #循环获取group 信息，包含名称和代号用于后续请求
+        # for group in group_html:
+        #     group_map[group.find('a').text]=group.find('a').attrs.get('groupvalue')
         
-        for name in group_map:
+        for group in group_map:
             page_index=0
             cur_map=[]
             #获取每一项的篇数
-            cur_size=int(re.sub( "\D" , "", name))
+            cur_size=int(re.sub( "\D" , "", group.get('value')))
             rs_json_data["GroupByIndex"]=page_index
             rs_json_data["Pager.PageIndex"]=page_index
-            rs_json_data["ClassCodeKey"]=","+group_map[name]+",,,,"
+            rs_json_data["ClassCodeKey"]=","+group.get('key')+",,,,"
             
             rc_data_html=crawl_law_post(url+record_path,rs_json_data)
             cur_map=get_useful_data(rc_data_html)
@@ -144,10 +169,22 @@ def get_pku_law():
                 tem=get_useful_data(rc_data_html)
                 cur_map+=tem
                 # cur_map.extend(get_useful_data(rc_data_html))
-            res[name]=cur_map
-        # BeautifulSoup(data_hrml,'html.parser').find_all('div',class_='list-title');
+            res[group.get('value')]=cur_map
+        #处理获取到的数据到excel
+        sheet = execl.add_sheet("测试表名",cell_overwrite_ok=True)
+
+        for group_name in res: 
+            sheet = execl.add_sheet(group_name,cell_overwrite_ok=True)
+
+            sheet.write(1,0,group_name)
+            i=1
+            cur_data=res[group_name]
+            for one in cur_data:
+                sheet.write(i,0,one.get("title")) 
+                i+=1
+        # os.mknod("a.xlsx") 
+        execl.save(outputdir+keyword)
         main_page=crawl(url);
-    
 
     except Exception as e:
         # train_stations = train_stations[index_num:len(train_stations)]

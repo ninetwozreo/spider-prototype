@@ -22,3 +22,4 @@ vine==5.0.0
 requests==2.25.0
 celery==5.0.1
 wheel==0.36.2
+xlwt==1.3.0
