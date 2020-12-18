@@ -36,8 +36,8 @@ outputdir = os.getcwd()
 #运行方法标志
 sign = "pkulaw";
 #中央chl或地方lar
-stype = "lar";
-# stype = "chl";
+# stype = "lar";
+stype = "chl";
 #关键字
 keyword ="老旧小区";
 #每页条
@@ -85,11 +85,11 @@ def get_pku_law():
     execl = xlwt.Workbook()
 
     index_num=0
-    url = "https://www.pkulaw.com"
+    url = "https://www.pkulaw.com/"
     group_json_data={
         "library": stype,
         "className": "EffectivenessDic",
-        # classCodeKeys: 
+        "classCodeKeys": "",
         # QueryBase64Request: eyJGaWVsZE5hbWUiOm51bGwsIlZhbHVlIjpudWxsLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjowLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoyLCJDaGlsZE5vZGVzIjpbeyJGaWVsZE5hbWUiOiJLZXl3b3JkU2VhcmNoVHJlZSIsIlZhbHVlIjpudWxsLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjowLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoxLCJDaGlsZE5vZGVzIjpbeyJGaWVsZE5hbWUiOiJEb2N1bWVudE5PIiwiVmFsdWUiOiLogIHml6flsI/ljLoiLCJSdWxlVHlwZSI6NCwiTWFueVZhbHVlU3BsaXQiOiJcdTAwMDAiLCJXb3JkTWF0Y2hUeXBlIjoxLCJXb3JkUmF0ZSI6MCwiQ29tYmluYXRpb25UeXBlIjoyLCJDaGlsZE5vZGVzIjpbXSwiQW5hbHl6ZXIiOiJpa19tYXhfd29yZCIsIkJvb3N0IjpudWxsLCJNaW5pbXVtX3Nob3VsZF9tYXRjaCI6bnVsbH0seyJGaWVsZE5hbWUiOiJUaXRsZSIsIlZhbHVlIjoi6ICB5pen5bCP5Yy6IiwiUnVsZVR5cGUiOjQsIk1hbnlWYWx1ZVNwbGl0IjoiXHUwMDAwIiwiV29yZE1hdGNoVHlwZSI6MSwiV29yZFJhdGUiOjAsIkNvbWJpbmF0aW9uVHlwZSI6MiwiQ2hpbGROb2RlcyI6W10sIkFuYWx5emVyIjoiaWtfbWF4X3dvcmQiLCJCb29zdCI6bnVsbCwiTWluaW11bV9zaG91bGRfbWF0Y2giOm51bGx9XSwiQW5hbHl6ZXIiOm51bGwsIkJvb3N0IjpudWxsLCJNaW5pbXVtX3Nob3VsZF9tYXRjaCI6bnVsbH1dLCJBbmFseXplciI6bnVsbCwiQm9vc3QiOm51bGwsIk1pbmltdW1fc2hvdWxkX21hdGNoIjpudWxsfQ==
         "keyword": keyword,
         # advDic: 
@@ -140,6 +140,7 @@ def get_pku_law():
     try:
         # main_page=requests.post(url+local_path,headers=header,data=datau)
         #map中key为代码，value为名字
+        # post_res=crawl_law_post(url+local_path,group_json_data)
         post_res=crawl_law_post(url+group_get_path,group_json_data)
         if(post_res):
             group_map=json.loads(post_res)
