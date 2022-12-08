@@ -4,7 +4,7 @@ backports-abc==0.5
 beautifulsoup4==4.6.0
 billiard==3.6.3.0
 bs4==0.0.1
-certifi==2017.7.27.1
+certifi==2022.12.7
 chardet==3.0.4
 et-xmlfile==1.0.1
 idna==2.6
